@@ -1,35 +1,40 @@
 import React from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
-import { TaskStatus } from '../../types/types'; // Import TaskStatus
+import { TaskStatus } from '../../types/types'; // Make sure this path is correct
+import { COLUMNS } from '../../data/initialData'; // Make sure this path is correct
 
 export const ProjectAnalytics = ({ tasks }) => {
   // Calculate Overall Project Completion
   const totalTasks = tasks.length;
-  const completedTasks = tasks.filter(task => task.status === TaskStatus.DONE || task.progress === 100);
   const totalProgress = tasks.reduce((sum, task) => sum + (task.progress || 0), 0);
   const averageProgress = totalTasks > 0 ? Math.round(totalProgress / totalTasks) : 0;
 
   // Data for Task Distribution Pie Chart
+  // Ensure COLUMNS is correctly imported and available
   const statusData = COLUMNS.map(column => ({
     name: column.title,
     value: tasks.filter(task => task.status === column.id).length,
   }));
 
-  // Define colors for the pie chart segments
-  const COLORS = ['#FFBB28', '#00C49F', '#0088FE']; // Yellow for TODO, Green for IN_PROGRESS, Blue for DONE (adjust as needed)
-
-  // Use a map to assign colors consistently based on TaskStatus
+  // Define colors for the pie chart segments consistently
   const statusColors = {
-    [TaskStatus.TODO]: '#FFBB28',      // A warm color for tasks to do
-    [TaskStatus.IN_PROGRESS]: '#00C49F', // A vibrant color for tasks in progress
-    [TaskStatus.DONE]: '#0088FE',       // A cool color for completed tasks
+    [TaskStatus.TODO]: '#FFBB28',      // Yellow for To Do
+    [TaskStatus.IN_PROGRESS]: '#00C49F', // Green for In Progress
+    [TaskStatus.DONE]: '#0088FE',       // Blue for Done
   };
 
   // Adjust statusData to use the consistent colors
   const coloredStatusData = statusData.map(item => ({
     ...item,
+    // Safely access the color based on the original column ID
     color: statusColors[COLUMNS.find(col => col.title === item.name)?.id] || '#A0A0A0' // Fallback color
   }));
+
+  // Filter out data entries with value 0 for the Pie Chart
+  const filteredColoredStatusData = coloredStatusData.filter(entry => entry.value > 0);
+
+  // Calculate the sum of all values in the filtered data for percentage calculation
+  const totalValue = filteredColoredStatusData.reduce((sum, entry) => sum + entry.value, 0);
 
   return (
     <div className="p-4 bg-neutral-800 rounded-lg shadow-md h-full flex flex-col">
@@ -86,24 +91,38 @@ export const ProjectAnalytics = ({ tasks }) => {
             <h3 className="text-lg font-semibold text-neutral-200 mb-4">
               Tasks by Status
             </h3>
-            <ResponsiveContainer width="100%" height={200}>
+            <ResponsiveContainer width="100%" height={250}>
               <PieChart>
                 <Pie
-                  data={coloredStatusData}
+                  data={filteredColoredStatusData}
                   cx="50%"
                   cy="50%"
-                  outerRadius={80}
+                  outerRadius={70}
+                  innerRadius={40}
                   fill="#8884d8"
                   dataKey="value"
                   labelLine={false}
-                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                  label={false} // Removed the label from the pie slices to prevent overlap
                 >
-                  {coloredStatusData.map((entry, index) => (
+                  {filteredColoredStatusData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
                 <Tooltip contentStyle={{ backgroundColor: '#333', border: 'none', color: '#fff' }} itemStyle={{ color: '#fff' }} />
-                <Legend />
+                <Legend
+                  align="right"
+                  verticalAlign="middle"
+                  layout="vertical"
+                  wrapperStyle={{ paddingLeft: '20px' }}
+                  // Manually calculate the percentage for a more robust display
+                  formatter={(value, entry) => {
+                    const percentage = totalValue > 0
+                      ? ((entry.payload.value / totalValue) * 100).toFixed(0)
+                      : 0;
+                    return `${value}: ${percentage}%`;
+                  }}
+                  iconType="circle"
+                />
               </PieChart>
             </ResponsiveContainer>
           </div>
@@ -112,8 +131,3 @@ export const ProjectAnalytics = ({ tasks }) => {
     </div>
   );
 };
-
-// Import COLUMNS for status data mapping, needs to be accessible
-// Assuming COLUMNS is also available globally or passed via context/props
-// For now, let's import it directly if it's not changing.
-import { COLUMNS } from '../../data/initialData';
