@@ -13,6 +13,7 @@ export const DashboardPage = () => {
       id: Date.now().toString(),
       ...taskData,
       progress: 0,
+      assignedTo: [], // New tasks are now unassigned by default with an empty array
     };
     setTasks((prevTasks) => [...prevTasks, newTask]);
   };
@@ -21,7 +22,6 @@ export const DashboardPage = () => {
     setTasks((prevTasks) =>
       prevTasks.map((task) => {
         if (task.id === updatedTask.id) {
-          // Logic to enforce progress based on status
           let newProgress = updatedTask.progress;
           if (updatedTask.status === TaskStatus.TODO) {
             newProgress = 0;
@@ -49,7 +49,6 @@ export const DashboardPage = () => {
     setTasks((prevTasks) =>
       prevTasks.map((task) => {
         if (task.id === taskId) {
-          // Auto-set progress based on the new status
           let newProgress = task.progress;
           if (newStatus === TaskStatus.TODO) {
             newProgress = 0;

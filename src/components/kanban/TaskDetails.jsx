@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { TaskStatus } from '../../types/types'; // Import TaskStatus
+import { TaskStatus } from '../../types/types';
+import { CircularProgressMeter } from './CircularProgressMeter';
+import { UserAvatarPicker } from './UserAvatarPicker';
+import { MOCK_USERS } from '../../services/authService';
 
 export const TaskDetails = ({ task, onSave, onDelete, onCancel }) => {
   const [editedTitle, setEditedTitle] = useState('');
   const [editedDescription, setEditedDescription] = useState('');
   const [editedProgress, setEditedProgress] = useState(0);
+  const [editedAssignedTo, setEditedAssignedTo] = useState([]); // Now an array
   const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
@@ -12,6 +16,7 @@ export const TaskDetails = ({ task, onSave, onDelete, onCancel }) => {
       setEditedTitle(task.title);
       setEditedDescription(task.description);
       setEditedProgress(task.progress || 0);
+      setEditedAssignedTo(task.assignedTo); // Set initial array
     }
   }, [task]);
 
@@ -25,6 +30,7 @@ export const TaskDetails = ({ task, onSave, onDelete, onCancel }) => {
       title: editedTitle,
       description: editedDescription,
       progress: parseInt(editedProgress, 10),
+      assignedTo: editedAssignedTo, // Save the array of assignees
     });
     setIsEditing(false);
   };
@@ -39,16 +45,24 @@ export const TaskDetails = ({ task, onSave, onDelete, onCancel }) => {
     setEditedTitle(task.title);
     setEditedDescription(task.description);
     setEditedProgress(task.progress || 0);
+    setEditedAssignedTo(task.assignedTo); // Reset to original array
     setIsEditing(false);
     onCancel();
   };
 
-  // Helper function to determine progress bar color
   const getProgressColor = (progress) => {
     if (progress === 0) return 'bg-gray-500';
     if (progress > 0 && progress < 100) return 'bg-yellow-500';
     if (progress === 100) return 'bg-green-500';
     return 'bg-gray-500';
+  };
+  
+  const getAssignedUserNames = () => {
+    if (editedAssignedTo.length === 0) {
+      return 'Unassigned';
+    }
+    const names = MOCK_USERS.filter(user => editedAssignedTo.includes(user.id)).map(user => user.name);
+    return names.join(', ');
   };
 
   return (
@@ -81,7 +95,6 @@ export const TaskDetails = ({ task, onSave, onDelete, onCancel }) => {
             />
           </div>
           
-          {/* Conditional rendering for the progress meter and slider */}
           {task.status === TaskStatus.IN_PROGRESS && (
             <div>
               <label htmlFor="progress" className="block text-sm font-medium text-neutral-300 mb-1">
@@ -100,17 +113,28 @@ export const TaskDetails = ({ task, onSave, onDelete, onCancel }) => {
               <span className="block text-center text-lg font-bold mt-2">{editedProgress}%</span>
             </div>
           )}
+
+          {/* New Multi-User Assignment Picker */}
+          <div>
+            <label className="block text-sm font-medium text-neutral-300 mb-2">
+              Assigned To
+            </label>
+            <UserAvatarPicker 
+              assignedTo={editedAssignedTo}
+              onAssign={setEditedAssignedTo}
+            />
+          </div>
           
           <div className="flex justify-end gap-3 mt-6">
             <button
               onClick={handleSave}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors shadow-lg hover:shadow-xl"
             >
               Save
             </button>
             <button
               onClick={handleCancel}
-              className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
+              className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors shadow-lg hover:shadow-xl"
             >
               Cancel
             </button>
@@ -122,31 +146,52 @@ export const TaskDetails = ({ task, onSave, onDelete, onCancel }) => {
           <h3 className="text-2xl font-bold mb-3">{task.title}</h3>
           <p className="text-neutral-300 mb-4 whitespace-pre-wrap">{task.description}</p>
           <div className="space-y-2 mb-4">
-            <p>
-              <span className="font-medium">Status:</span>{' '}
-              <span className="capitalize">{task.status.toLowerCase().replace(/_/g, ' ')}</span>
+            <p className="text-lg font-semibold">
+              Status:{' '}
+              <span className="capitalize font-normal">{task.status.toLowerCase().replace(/_/g, ' ')}</span>
             </p>
-            <p>
-              <span className="font-medium">Progress:</span> {task.progress || 0}%
+
+            {/* Conditional Progress Meter */}
+            {task.status === TaskStatus.IN_PROGRESS ? (
+              <div className="flex flex-col items-center">
+                <CircularProgressMeter progress={task.progress} />
+                <p className="text-center text-neutral-400 text-sm mt-2">
+                  This task is currently {task.progress}% complete.
+                </p>
+              </div>
+            ) : (
+              <div>
+                <p className="font-semibold text-neutral-200">
+                  Progress:{' '}
+                  <span className="font-normal">{task.progress || 0}%</span>
+                </p>
+                <div className="w-full h-2.5 bg-neutral-600 rounded-full mt-2 overflow-hidden shadow-inner">
+                  <div
+                    className={`h-full rounded-full transition-all duration-500 ease-in-out ${getProgressColor(task.progress)}`}
+                    style={{ width: `${task.progress || 0}%` }}
+                  ></div>
+                </div>
+              </div>
+            )}
+            
+            {/* Display Assigned Users in Viewing Mode */}
+            <p className="text-lg font-semibold">
+              Assigned To:
+              <span className="capitalize font-normal ml-2">
+                {getAssignedUserNames()}
+              </span>
             </p>
-            {/* Progress Bar within details with dynamic styling */}
-            <div className="w-full h-2.5 bg-neutral-600 rounded-full mt-2 overflow-hidden shadow-inner">
-              <div
-                className={`h-full rounded-full transition-all duration-500 ease-in-out ${getProgressColor(task.progress)}`}
-                style={{ width: `${task.progress || 0}%` }}
-              ></div>
-            </div>
           </div>
           <div className="flex justify-between items-center mt-6">
             <button
               onClick={handleDeleteClick}
-              className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
+              className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors shadow-lg hover:shadow-xl"
             >
               Delete Task
             </button>
             <button
               onClick={() => setIsEditing(true)}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors shadow-lg hover:shadow-xl"
             >
               Edit Task
             </button>

@@ -1,5 +1,6 @@
 import { useDraggable } from "@dnd-kit/core";
-import { TaskStatus } from '../../types/types'; // Import TaskStatus
+import { TaskStatus } from '../../types/types';
+import { MOCK_USERS } from '../../services/authService';
 
 export function TaskCard({ task, onOpenDetails }) {
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
@@ -17,21 +18,13 @@ export function TaskCard({ task, onOpenDetails }) {
     onOpenDetails(task);
   };
   
-  // Helper function to determine progress bar color
-  const getProgressColor = (progress) => {
-    if (progress === 0 && task.status !== TaskStatus.TODO) return 'bg-gray-500';
-    if (progress === 100 && task.status !== TaskStatus.DONE) return 'bg-gray-500';
-    if (progress > 0 && progress < 100) return 'bg-yellow-500';
-    if (progress === 100) return 'bg-green-500';
-    if (progress === 0) return 'bg-gray-500';
-    return 'bg-gray-500';
-  };
-
   const getProgressColorClass = (progress, status) => {
     if (status === TaskStatus.TODO) return 'bg-gray-500';
     if (status === TaskStatus.DONE) return 'bg-green-500';
     return 'bg-yellow-500';
   };
+
+  const assignedUsers = MOCK_USERS.filter(user => task.assignedTo.includes(user.id));
 
   return (
     <div
@@ -58,15 +51,43 @@ export function TaskCard({ task, onOpenDetails }) {
             style={{ width: `${task.progress || 0}%` }}
           ></div>
         </div>
-
-        {/* Details Button */}
-        <button
-          onClick={handleDetailsClick}
-          className="p-1 px-3 text-xs text-neutral-400 hover:text-neutral-100 bg-neutral-600 hover:bg-neutral-500 rounded transition-colors flex-shrink-0"
-          title="View Details"
-        >
-          Details
-        </button>
+        
+        {/* User Avatars and Details Button container */}
+        <div className="flex-shrink-0 flex items-center space-x-2">
+          {/* Display multiple avatars */}
+          <div className="flex -space-x-2 overflow-hidden">
+            {assignedUsers.slice(0, 3).map(assignedUser => ( // Show up to 3 avatars
+              <img 
+                key={assignedUser.id}
+                src={assignedUser.avatar} 
+                alt={assignedUser.name} 
+                title={assignedUser.name}
+                className="w-6 h-6 rounded-full border-2 border-neutral-500" 
+              />
+            ))}
+            {assignedUsers.length > 3 && (
+              <div className="w-6 h-6 rounded-full bg-neutral-600 flex items-center justify-center border-2 border-neutral-500 text-neutral-300 text-xs">
+                +{assignedUsers.length - 3}
+              </div>
+            )}
+          </div>
+          {assignedUsers.length === 0 && (
+            <div className="w-6 h-6 rounded-full bg-neutral-600 flex items-center justify-center border-2 border-dashed border-neutral-500 text-neutral-400">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+              </svg>
+            </div>
+          )}
+          
+          {/* Details Button */}
+          <button
+            onClick={handleDetailsClick}
+            className="p-1 px-3 text-xs text-neutral-400 hover:text-neutral-100 bg-neutral-600 hover:bg-neutral-500 rounded transition-colors"
+            title="View Details"
+          >
+            Details
+          </button>
+        </div>
       </div>
     </div>
   );
