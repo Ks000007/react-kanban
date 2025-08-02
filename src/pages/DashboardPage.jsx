@@ -3,6 +3,7 @@ import { KanbanBoard } from "../components/kanban/KanbanBoard";
 import { Navbar } from "../components/layout/Navbar";
 import { INITIAL_TASKS } from '../data/initialData';
 import { ProjectAnalytics } from '../components/kanban/ProjectAnalytics';
+import { TaskStatus } from '../types/types';
 
 export const DashboardPage = () => {
   const [tasks, setTasks] = useState(INITIAL_TASKS);
@@ -18,9 +19,19 @@ export const DashboardPage = () => {
 
   const handleSaveTaskDetails = (updatedTask) => {
     setTasks((prevTasks) =>
-      prevTasks.map((task) =>
-        task.id === updatedTask.id ? updatedTask : task
-      )
+      prevTasks.map((task) => {
+        if (task.id === updatedTask.id) {
+          // Logic to enforce progress based on status
+          let newProgress = updatedTask.progress;
+          if (updatedTask.status === TaskStatus.TODO) {
+            newProgress = 0;
+          } else if (updatedTask.status === TaskStatus.DONE) {
+            newProgress = 100;
+          }
+          return { ...updatedTask, progress: newProgress };
+        }
+        return task;
+      })
     );
   };
 
@@ -36,16 +47,26 @@ export const DashboardPage = () => {
     const newStatus = over.id;
 
     setTasks((prevTasks) =>
-      prevTasks.map((task) =>
-        task.id === taskId ? { ...task, status: newStatus } : task
-      )
+      prevTasks.map((task) => {
+        if (task.id === taskId) {
+          // Auto-set progress based on the new status
+          let newProgress = task.progress;
+          if (newStatus === TaskStatus.TODO) {
+            newProgress = 0;
+          } else if (newStatus === TaskStatus.DONE) {
+            newProgress = 100;
+          }
+          return { ...task, status: newStatus, progress: newProgress };
+        }
+        return task;
+      })
     );
   };
 
   return (
     <div className="min-h-screen bg-gray-900 flex flex-col">
       <Navbar />
-      <div className="flex-grow p-6 overflow-y-auto custom-scrollbar"> {/* Allow vertical scrolling */}
+      <div className="flex-grow p-6 overflow-y-auto custom-scrollbar">
         <header className="mb-8 text-center">
           <h1 className="text-4xl font-extrabold text-white mb-2">
             Kanban Board
@@ -55,8 +76,7 @@ export const DashboardPage = () => {
           </p>
         </header>
 
-        {/* Kanban Board - Centered and takes full width for its content */}
-        <div className="flex justify-center mb-12"> {/* Centering container, added mb-12 for space below */}
+        <div className="flex justify-center mb-12">
           <KanbanBoard
             tasks={tasks}
             onAddTask={handleAddTask}
@@ -66,8 +86,7 @@ export const DashboardPage = () => {
           />
         </div>
 
-        {/* Project Analytics - Below the Kanban Board, centered and wider */}
-        <div className="max-w-4xl mx-auto"> {/* Max width for analytics, auto margins for centering */}
+        <div className="max-w-4xl mx-auto">
           <ProjectAnalytics tasks={tasks} />
         </div>
       </div>

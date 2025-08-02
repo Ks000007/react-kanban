@@ -1,4 +1,5 @@
 import { useDraggable } from "@dnd-kit/core";
+import { TaskStatus } from '../../types/types'; // Import TaskStatus
 
 export function TaskCard({ task, onOpenDetails }) {
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
@@ -14,6 +15,22 @@ export function TaskCard({ task, onOpenDetails }) {
   const handleDetailsClick = (e) => {
     e.stopPropagation();
     onOpenDetails(task);
+  };
+  
+  // Helper function to determine progress bar color
+  const getProgressColor = (progress) => {
+    if (progress === 0 && task.status !== TaskStatus.TODO) return 'bg-gray-500';
+    if (progress === 100 && task.status !== TaskStatus.DONE) return 'bg-gray-500';
+    if (progress > 0 && progress < 100) return 'bg-yellow-500';
+    if (progress === 100) return 'bg-green-500';
+    if (progress === 0) return 'bg-gray-500';
+    return 'bg-gray-500';
+  };
+
+  const getProgressColorClass = (progress, status) => {
+    if (status === TaskStatus.TODO) return 'bg-gray-500';
+    if (status === TaskStatus.DONE) return 'bg-green-500';
+    return 'bg-yellow-500';
   };
 
   return (
@@ -34,11 +51,11 @@ export function TaskCard({ task, onOpenDetails }) {
 
       {/* Footer with Progress Bar and Details Button */}
       <div className="flex justify-between items-center mt-2">
-        {/* Progress Bar */}
-        <div className="w-full bg-neutral-600 rounded-full h-2.5 mr-4"> {/* Container for the bar */}
+        {/* Progress Bar with dynamic styling */}
+        <div className="w-full bg-neutral-600 rounded-full h-2.5 mr-4 overflow-hidden shadow-inner">
           <div
-            className="bg-blue-500 h-2.5 rounded-full"
-            style={{ width: `${task.progress || 0}%` }} // Dynamic width based on progress
+            className={`h-full rounded-full transition-all duration-500 ease-in-out ${getProgressColorClass(task.progress, task.status)}`}
+            style={{ width: `${task.progress || 0}%` }}
           ></div>
         </div>
 
