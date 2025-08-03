@@ -1,7 +1,7 @@
 import React from 'react';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
-import { TaskStatus } from '../../types/types'; // Make sure this path is correct
-import { COLUMNS } from '../../data/initialData'; // Make sure this path is correct
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, LineChart, Line, XAxis, YAxis, CartesianGrid } from 'recharts';
+import { TaskStatus } from '../../types/types';
+import { COLUMNS } from '../../data/initialData';
 
 export const ProjectAnalytics = ({ tasks }) => {
   // Calculate Overall Project Completion
@@ -10,31 +10,74 @@ export const ProjectAnalytics = ({ tasks }) => {
   const averageProgress = totalTasks > 0 ? Math.round(totalProgress / totalTasks) : 0;
 
   // Data for Task Distribution Pie Chart
-  // Ensure COLUMNS is correctly imported and available
   const statusData = COLUMNS.map(column => ({
     name: column.title,
     value: tasks.filter(task => task.status === column.id).length,
   }));
-
-  // Define colors for the pie chart segments consistently
   const statusColors = {
-    [TaskStatus.TODO]: '#FFBB28',      // Yellow for To Do
-    [TaskStatus.IN_PROGRESS]: '#00C49F', // Green for In Progress
-    [TaskStatus.DONE]: '#0088FE',       // Blue for Done
+    [TaskStatus.TODO]: '#FFBB28',
+    [TaskStatus.IN_PROGRESS]: '#00C49F',
+    [TaskStatus.DONE]: '#0088FE',
   };
-
-  // Adjust statusData to use the consistent colors
   const coloredStatusData = statusData.map(item => ({
     ...item,
-    // Safely access the color based on the original column ID
-    color: statusColors[COLUMNS.find(col => col.title === item.name)?.id] || '#A0A0A0' // Fallback color
+    color: statusColors[COLUMNS.find(col => col.title === item.name)?.id] || '#A0A0A0'
   }));
-
-  // Filter out data entries with value 0 for the Pie Chart
   const filteredColoredStatusData = coloredStatusData.filter(entry => entry.value > 0);
-
-  // Calculate the sum of all values in the filtered data for percentage calculation
   const totalValue = filteredColoredStatusData.reduce((sum, entry) => sum + entry.value, 0);
+
+  // Data for Burndown Chart
+  const calculateBurndownData = () => {
+    if (totalTasks === 0) return [];
+    
+    // Determine project start and end dates based on all tasks
+    const allStartDates = tasks.map(task => new Date(task.startDate)).filter(Boolean);
+    const allDueDates = tasks.map(task => new Date(task.dueDate)).filter(Boolean);
+    
+    if (allStartDates.length === 0 || allDueDates.length === 0) {
+      return [];
+    }
+
+    const projectStartDate = new Date(Math.min(...allStartDates));
+    const projectEndDate = new Date(Math.max(...allDueDates));
+    
+    projectStartDate.setHours(0, 0, 0, 0);
+    projectEndDate.setHours(0, 0, 0, 0);
+
+    const data = [];
+    let currentDate = new Date(projectStartDate);
+    const totalWork = tasks.length;
+    let completedTasksCount = 0;
+
+    // Sort tasks by due date to correctly calculate burndown
+    const sortedTasks = [...tasks].sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
+
+    while (currentDate.getTime() <= projectEndDate.getTime()) {
+      const formattedDate = currentDate.toISOString().split('T')[0];
+      
+      // Count tasks that are done and whose due date has passed
+      let tasksCompleted = sortedTasks.filter(task =>
+        task.status === TaskStatus.DONE && new Date(task.dueDate).getTime() <= currentDate.getTime()
+      ).length;
+      
+      data.push({
+        date: formattedDate,
+        ideal: totalWork - ((currentDate.getTime() - projectStartDate.getTime()) / (projectEndDate.getTime() - projectStartDate.getTime())) * totalWork,
+        actual: totalWork - tasksCompleted,
+      });
+
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+    
+    // Ensure the last data point shows 0 remaining tasks if all are done
+    if (tasks.every(task => task.status === TaskStatus.DONE)) {
+        data[data.length - 1].actual = 0;
+    }
+    
+    return data;
+  };
+  
+  const burndownData = calculateBurndownData();
 
   return (
     <div className="p-4 bg-neutral-800 rounded-lg shadow-md h-full flex flex-col">
@@ -54,7 +97,6 @@ export const ProjectAnalytics = ({ tasks }) => {
             <div className="flex items-center justify-center space-x-4">
               <div className="relative w-24 h-24">
                 <svg className="w-full h-full" viewBox="0 0 100 100">
-                  {/* Background circle */}
                   <circle
                     className="text-neutral-600 stroke-current"
                     strokeWidth="10"
@@ -63,7 +105,6 @@ export const ProjectAnalytics = ({ tasks }) => {
                     r="40"
                     fill="transparent"
                   ></circle>
-                  {/* Progress circle */}
                   <circle
                     className="text-blue-500 progress-ring__circle stroke-current"
                     strokeWidth="10"
@@ -102,7 +143,7 @@ export const ProjectAnalytics = ({ tasks }) => {
                   fill="#8884d8"
                   dataKey="value"
                   labelLine={false}
-                  label={false} // Removed the label from the pie slices to prevent overlap
+                  label={false}
                 >
                   {filteredColoredStatusData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
@@ -114,7 +155,6 @@ export const ProjectAnalytics = ({ tasks }) => {
                   verticalAlign="middle"
                   layout="vertical"
                   wrapperStyle={{ paddingLeft: '20px' }}
-                  // Manually calculate the percentage for a more robust display
                   formatter={(value, entry) => {
                     const percentage = totalValue > 0
                       ? ((entry.payload.value / totalValue) * 100).toFixed(0)
@@ -126,6 +166,29 @@ export const ProjectAnalytics = ({ tasks }) => {
               </PieChart>
             </ResponsiveContainer>
           </div>
+          
+          {/* Burndown Chart */}
+          {burndownData.length > 0 && (
+            <div>
+              <h3 className="text-lg font-semibold text-neutral-200 mb-4">
+                Project Burndown Chart
+              </h3>
+              <ResponsiveContainer width="100%" height={250}>
+                <LineChart data={burndownData} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#4b5563" />
+                  <XAxis dataKey="date" tick={{ fill: '#d1d5db', fontSize: 12 }} />
+                  <YAxis tick={{ fill: '#d1d5db', fontSize: 12 }} />
+                  <Tooltip contentStyle={{ backgroundColor: '#1f2937', border: 'none', color: '#fff' }} />
+                  <Legend />
+                  <Line type="monotone" dataKey="ideal" stroke="#9ca3af" strokeDasharray="5 5" name="Ideal Burndown" />
+                  <Line type="monotone" dataKey="actual" stroke="#ef4444" name="Actual Burndown" />
+                </LineChart>
+              </ResponsiveContainer>
+              <p className="text-center text-sm text-neutral-400 mt-2">
+                Shows remaining tasks over time. Based on start and due dates.
+              </p>
+            </div>
+          )}
         </div>
       )}
     </div>
