@@ -8,6 +8,7 @@ export const RegisterForm = () => {
     email: "",
     password: "",
     confirmPassword: "",
+    role: "developer", // Default to 'developer'
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -37,7 +38,8 @@ export const RegisterForm = () => {
       const result = await register(
         formData.email,
         formData.password,
-        formData.name
+        formData.name,
+        formData.role
       );
       if (result.success) {
         navigate("/dashboard");
@@ -142,6 +144,29 @@ export const RegisterForm = () => {
                 className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-600 placeholder-gray-400 text-white bg-gray-700 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
                 placeholder="Confirm your password"
               />
+            </div>
+            
+            <div>
+              <label
+                htmlFor="role"
+                className="block text-sm font-medium text-gray-300"
+              >
+                Role
+              </label>
+              <select
+                id="role"
+                name="role"
+                value={formData.role}
+                onChange={handleChange}
+                className="mt-1 block w-full px-3 py-2 border border-gray-600 rounded-md shadow-sm text-white bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="developer">Developer</option>
+                <option value="designer">Designer</option>
+                <option value="manager">Manager</option>
+                <option value="tester">Tester</option>
+                <option value="lead">Lead</option>
+                <option value="admin">Admin</option>
+              </select>
             </div>
           </div>
 
