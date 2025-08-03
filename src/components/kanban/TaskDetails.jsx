@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { TaskStatus } from '../../types/types';
-import { CircularProgressMeter } from './CircularProgressMeter';
+import { CircularProgressMeter } from './CircularProgressMeter'; // Import CircularProgressMeter
 import { UserAvatarPicker } from './UserAvatarPicker';
-import { MOCK_USERS } from '../../services/authService';
 
-export const TaskDetails = ({ task, onSave, onDelete, onCancel }) => {
+export const TaskDetails = ({ task, onSave, onDelete, onCancel, users }) => {
   const [editedTitle, setEditedTitle] = useState('');
   const [editedDescription, setEditedDescription] = useState('');
   const [editedProgress, setEditedProgress] = useState(0);
@@ -69,7 +68,7 @@ export const TaskDetails = ({ task, onSave, onDelete, onCancel }) => {
     if (!task.assignedTo || task.assignedTo.length === 0) {
       return 'Unassigned';
     }
-    const names = MOCK_USERS.filter(user => task.assignedTo.includes(user.id)).map(user => user.name);
+    const names = users.filter(user => task.assignedTo.includes(user.id)).map(user => user.name);
     return names.join(', ');
   };
 
@@ -154,6 +153,7 @@ export const TaskDetails = ({ task, onSave, onDelete, onCancel }) => {
             <UserAvatarPicker 
               assignedTo={editedAssignedTo}
               onAssign={setEditedAssignedTo}
+              allUsers={users}
             />
           </div>
           

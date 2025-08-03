@@ -5,7 +5,7 @@ import { TimelineView } from '../components/calendar/TimelineView'; // Import Ti
 import { Modal } from '../components/common/Modal';
 import { TaskDetails } from '../components/kanban/TaskDetails';
 
-export const CalendarPage = ({ tasks, onSaveTaskDetails, onDeleteTask, showTimeline = false }) => {
+export const CalendarPage = ({ tasks, onSaveTaskDetails, onDeleteTask, showTimeline = false, users }) => { // Added 'users' prop
   const [selectedTask, setSelectedTask] = useState(null);
 
   const handleOpenTaskDetails = (task) => {
@@ -40,7 +40,7 @@ export const CalendarPage = ({ tasks, onSaveTaskDetails, onDeleteTask, showTimel
         </header>
 
         {showTimeline ? (
-          <TimelineView tasks={tasks} onOpenDetails={handleOpenTaskDetails} />
+          <TimelineView tasks={tasks} onOpenDetails={handleOpenTaskDetails} users={users} /> 
         ) : (
           <CalendarView tasks={tasks} onOpenDetails={handleOpenTaskDetails} />
         )}
@@ -56,6 +56,7 @@ export const CalendarPage = ({ tasks, onSaveTaskDetails, onDeleteTask, showTimel
           onSave={handleSaveTask}
           onDelete={handleDeleteTask}
           onCancel={handleCloseTaskDetails}
+          users={users} // Pass the users prop to TaskDetails
         />
       </Modal>
     </div>

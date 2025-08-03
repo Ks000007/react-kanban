@@ -5,7 +5,7 @@ import { COLUMNS } from "../../data/initialData";
 import { Modal } from "../common/Modal";
 import { TaskDetails } from "./TaskDetails";
 
-export function KanbanBoard({ tasks, onAddTask, onSaveTaskDetails, onDeleteTask, onDragEnd }) {
+export function KanbanBoard({ tasks, onAddTask, onSaveTaskDetails, onDeleteTask, onDragEnd, users }) { // Added 'users' prop
   const [selectedTask, setSelectedTask] = useState(null);
 
   const handleDragEnd = (event) => {
@@ -35,7 +35,7 @@ export function KanbanBoard({ tasks, onAddTask, onSaveTaskDetails, onDeleteTask,
 
   return (
     <div className="p-2">
-      <div className="flex gap-8 overflow-x-auto custom-scrollbar"> {/* Removed max-w-full and fixed width */}
+      <div className="flex gap-8 overflow-x-auto custom-scrollbar">
         <DndContext onDragEnd={handleDragEnd}>
           {COLUMNS.map((column) => (
             <Column
@@ -44,6 +44,7 @@ export function KanbanBoard({ tasks, onAddTask, onSaveTaskDetails, onDeleteTask,
               tasks={tasks.filter((task) => task.status === column.id)}
               onAddTask={onAddTask}
               onOpenDetails={handleOpenTaskDetails}
+              users={users} // Pass the users prop here to Column
             />
           ))}
         </DndContext>
@@ -59,6 +60,7 @@ export function KanbanBoard({ tasks, onAddTask, onSaveTaskDetails, onDeleteTask,
           onSave={handleSave}
           onDelete={handleDelete}
           onCancel={handleCloseTaskDetails}
+          users={users} // Pass users to TaskDetails directly from KanbanBoard
         />
       </Modal>
     </div>

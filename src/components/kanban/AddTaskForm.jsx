@@ -15,6 +15,7 @@ export function AddTaskForm({ onAddTask, columnId, onCancel }) {
         status: columnId,
         dueDate: dueDate || null,
         startDate: startDate || null,
+        assignedTo: [], // Initialize assignedTo as an empty array for new tasks
       });
       setTitle("");
       setDescription("");

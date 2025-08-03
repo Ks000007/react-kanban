@@ -2,7 +2,8 @@ import React from 'react';
 import { TaskStatus } from '../../types/types'; // Import TaskStatus
 
 export const UserTasks = ({ tasks, userId, onOpenDetails }) => {
-  const userAssignedTasks = tasks.filter(task => task.assignedTo.includes(userId));
+  // Ensure task.assignedTo is an array before calling .includes()
+  const userAssignedTasks = tasks.filter(task => (task.assignedTo || []).includes(userId));
 
   if (userAssignedTasks.length === 0) {
     return (

@@ -1,8 +1,7 @@
 import { useDraggable } from "@dnd-kit/core";
 import { TaskStatus } from '../../types/types';
-import { MOCK_USERS } from '../../services/authService';
 
-export function TaskCard({ task, onOpenDetails }) {
+export function TaskCard({ task, onOpenDetails, users }) {
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
     id: task.id,
   });
@@ -24,7 +23,8 @@ export function TaskCard({ task, onOpenDetails }) {
     return 'bg-yellow-500';
   };
 
-  const assignedUsers = MOCK_USERS.filter(user => task.assignedTo.includes(user.id));
+  // Ensure task.assignedTo is an array before calling .includes()
+  const assignedUsers = users.filter(user => (task.assignedTo || []).includes(user.id));
 
   // Helper function for overdue styling
   const isOverdue = (date) => {
@@ -68,14 +68,6 @@ export function TaskCard({ task, onOpenDetails }) {
               <span>{task.startDate}</span>
             </div>
           )}
-          {task.endDate && (
-            <div className="flex items-center space-x-1 text-neutral-400">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                <path d="M4 4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1.586a1 1 0 01-.707-.293l-1.414-1.414A1 1 0 0010.586 2h-1.172a1 1 0 00-.707.293L7.293 3.586A1 1 0 016.586 4H5a2 2 0 00-2 2zM3 7v9a1 1 0 001 1h12a1 1 0 001-1V7H3z" />
-              </svg>
-              <span>{task.endDate}</span>
-            </div>
-          )}
         </div>
       </div>
 
@@ -93,7 +85,7 @@ export function TaskCard({ task, onOpenDetails }) {
         <div className="flex-shrink-0 flex items-center space-x-2">
           {/* Display multiple avatars */}
           <div className="flex -space-x-2 overflow-hidden">
-            {assignedUsers.slice(0, 3).map(assignedUser => ( // Show up to 3 avatars
+            {assignedUsers.slice(0, 3).map(assignedUser => (
               <img 
                 key={assignedUser.id}
                 src={assignedUser.avatar} 

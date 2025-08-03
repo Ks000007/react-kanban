@@ -4,9 +4,9 @@ import { Navbar } from "../components/layout/Navbar";
 import { UserTasks } from '../components/kanban/UserTasks';
 import { Modal } from '../components/common/Modal';
 import { TaskDetails } from '../components/kanban/TaskDetails';
-import { authService, MOCK_USERS } from '../services/authService';
+import { authService } from '../services/authService'; // Removed MOCK_USERS import
 
-export const ProfilePage = ({ tasks, onSaveTaskDetails, onDeleteTask }) => {
+export const ProfilePage = ({ tasks, onSaveTaskDetails, onDeleteTask, users }) => { // Added 'users' prop
   const { user, login } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [editedData, setEditedData] = useState({
@@ -28,24 +28,39 @@ export const ProfilePage = ({ tasks, onSaveTaskDetails, onDeleteTask }) => {
   const handleSave = async () => {
     setError("");
     try {
-      const profileImageFile = document.getElementById('profile-image').files[0];
+      const profileImageInput = document.getElementById('profile-image');
       let newAvatar = user?.avatar;
-      if (profileImageFile) {
-        newAvatar = URL.createObjectURL(profileImageFile);
+      
+      // If a new file is selected, handle it. Note: For a real app, you'd upload this to a server
+      // and get back a URL. For this mock backend, we're just creating a client-side URL.
+      if (profileImageInput && profileImageInput.files[0]) {
+        const file = profileImageInput.files[0];
+        // For simplicity with the mock backend, we'll create a temporary URL.
+        // In a real application, you'd upload this image to a storage service (e.g., S3).
+        newAvatar = URL.createObjectURL(file); 
       }
 
       const updatedUser = {
         ...user,
         ...editedData,
-        avatar: newAvatar,
+        // Only update password if it's not empty
+        password: editedData.password || user.password,
+        avatar: newAvatar, // Use the potentially new avatar URL
       };
       
-      await authService.updateUser(user.id, updatedUser);
+      // Call the backend service to update the user
+      const result = await authService.updateUser(user.id, updatedUser);
       
-      const reloadedUser = authService.getCurrentUser();
-      login(reloadedUser.email, reloadedUser.password);
-      
-      setIsEditing(false);
+      if (result.success) {
+        // Re-login the user to update the context and cookies with the new data
+        // For password change, you'd typically ask for current password or have a separate flow.
+        // Here, we're just forcing a re-login with potentially new password/email.
+        // A more robust solution would be to update user in context directly if backend confirms success without needing a full re-login.
+        await login(result.user.email, editedData.password || user.password); 
+        setIsEditing(false);
+      } else {
+        setError(result.message || "Failed to update profile.");
+      }
     } catch (err) {
       setError("Failed to save profile changes.");
       console.error(err);
@@ -100,7 +115,8 @@ export const ProfilePage = ({ tasks, onSaveTaskDetails, onDeleteTask }) => {
                 <label className="block text-sm font-medium text-gray-300">
                   Profile Picture
                 </label>
-                <input type="file" id="profile-image" className="mt-1" />
+                {/* Note: In a real app, this would involve uploading to storage and getting a URL */}
+                <input type="file" id="profile-image" className="mt-1 text-neutral-300" accept="image/*" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-300">
@@ -176,7 +192,8 @@ export const ProfilePage = ({ tasks, onSaveTaskDetails, onDeleteTask }) => {
                 <label className="block text-sm font-medium text-gray-300">
                   Member Since
                 </label>
-                <p className="mt-1 text-white">January 2024</p>
+                {/* Placeholder for member since date - you might want to store this on user registration */}
+                <p className="mt-1 text-white">January 2024</p> 
               </div>
             </div>
           )}
@@ -204,6 +221,7 @@ export const ProfilePage = ({ tasks, onSaveTaskDetails, onDeleteTask }) => {
           onSave={handleSaveTask}
           onDelete={handleDeleteTask}
           onCancel={handleCloseTaskDetails}
+          users={users} // Pass users to TaskDetails here
         />
       </Modal>
     </div>

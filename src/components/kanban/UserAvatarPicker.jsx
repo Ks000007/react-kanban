@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { MOCK_USERS } from '../../services/authService';
+// Removed MOCK_USERS import
 import { useAuth } from '../../contexts/AuthContext'; // Import useAuth to access the current user
 
-export const UserAvatarPicker = ({ assignedTo, onAssign }) => {
+export const UserAvatarPicker = ({ assignedTo, onAssign, allUsers }) => { // Added allUsers prop
   const [isOpen, setIsOpen] = useState(false);
   const { user: currentUser } = useAuth();
-  const assignedUsers = MOCK_USERS.filter(user => assignedTo.includes(user.id));
+  // Filter assigned users from allUsers prop instead of MOCK_USERS
+  const assignedUsers = allUsers.filter(user => assignedTo.includes(user.id));
 
   const handleToggleUser = (userId) => {
     // Check if the user is already assigned
@@ -70,7 +71,7 @@ export const UserAvatarPicker = ({ assignedTo, onAssign }) => {
       {isOpen && (
         <div className="absolute top-full mt-2 w-56 bg-neutral-700 rounded-lg shadow-xl z-10 p-2">
           <h4 className="text-sm font-semibold text-neutral-300 px-2 pt-1 pb-2 border-b border-neutral-600">Assign to...</h4>
-          {MOCK_USERS.map(user => (
+          {allUsers.map(user => ( // Use allUsers instead of MOCK_USERS
             <div
               key={user.id}
               onClick={() => handleToggleUser(user.id)}

@@ -3,7 +3,7 @@ import { useDroppable } from "@dnd-kit/core";
 import { TaskCard } from "./TaskCard";
 import { AddTaskForm } from "./AddTaskForm";
 
-export function Column({ column, tasks, onAddTask, onOpenDetails }) { // Added onOpenDetails prop
+export function Column({ column, tasks, onAddTask, onOpenDetails, users }) { // Accept 'users' prop
   const [isAddingTask, setIsAddingTask] = useState(false);
 
   const { setNodeRef } = useDroppable({
@@ -29,7 +29,8 @@ export function Column({ column, tasks, onAddTask, onOpenDetails }) { // Added o
           <TaskCard
             key={task.id}
             task={task}
-            onOpenDetails={onOpenDetails} // Pass the handler to TaskCard
+            onOpenDetails={onOpenDetails}
+            users={users} // Pass the users prop to TaskCard
           />
         ))}
 

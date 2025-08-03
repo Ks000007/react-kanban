@@ -2,10 +2,11 @@ import React from 'react';
 import { KanbanBoard } from "../components/kanban/KanbanBoard";
 import { Navbar } from "../components/layout/Navbar";
 import { ProjectAnalytics } from '../components/kanban/ProjectAnalytics';
-import { INITIAL_TASKS } from '../data/initialData';
-import { TaskStatus } from '../types/types';
+// Removed INITIAL_TASKS import
+// TaskStatus is imported directly where needed, no change here
+// import { TaskStatus } from '../types/types'; 
 
-export const DashboardPage = ({ tasks, onAddTask, onSaveTaskDetails, onDeleteTask, onDragEnd }) => {
+export const DashboardPage = ({ tasks, onAddTask, onSaveTaskDetails, onDeleteTask, onDragEnd, users }) => { // Added 'users' prop
   return (
     <div className="min-h-screen bg-gray-900 flex flex-col">
       <Navbar />
@@ -26,6 +27,7 @@ export const DashboardPage = ({ tasks, onAddTask, onSaveTaskDetails, onDeleteTas
             onSaveTaskDetails={onSaveTaskDetails}
             onDeleteTask={onDeleteTask}
             onDragEnd={onDragEnd}
+            users={users} // Pass users to KanbanBoard for TaskCard and TaskDetails
           />
         </div>
 

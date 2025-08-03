@@ -1,162 +1,84 @@
 import Cookies from "js-cookie";
 
-// Helper function to generate a random hex color
-const getRandomColor = () => {
-    const letters = '0123456789ABCDEF';
-    let color = '';
-    for (let i = 0; i < 6; i++) {
-        color += letters[Math.floor(Math.random() * 16)];
-    }
-    return color;
-};
+const API_BASE_URL = 'http://localhost:3001/api';
 
-// Helper function to get initials from a name
-const getInitials = (name) => {
-    if (!name) return '??';
-    const parts = name.split(' ');
-    let initials = '';
-    if (parts.length > 0 && parts[0].length > 0) {
-        initials += parts[0][0];
-    }
-    if (parts.length > 1 && parts[1].length > 0) {
-        initials += parts[1][0];
-    }
-    return initials.toUpperCase();
-};
-
-const MOCK_USERS = [{
-        id: "1",
-        email: "admin@kanban.com",
-        password: "admin123",
-        name: "Admin User",
-        role: "admin",
-        avatar: "https://placehold.co/150x150/ff69b4/ffffff?text=AU",
-        color: "#ff69b4",
-    },
-    {
-        id: "2",
-        email: "user@kanban.com",
-        password: "user123",
-        name: "Regular User",
-        role: "developer",
-        avatar: "https://placehold.co/150x150/87ceeb/ffffff?text=RU",
-        color: "#87ceeb",
-    },
-    {
-        id: "3",
-        email: "shreyashkars172@gmail.com",
-        password: "password",
-        name: "Kushagra Shreyashkar",
-        role: "designer",
-        avatar: "https://placehold.co/150x150/9370db/ffffff?text=KS",
-        color: "#9370db",
-    },
-    {
-        id: "4",
-        email: "john.smith@kanban.com",
-        password: "john123",
-        name: "John Smith",
-        role: "manager",
-        avatar: "https://placehold.co/150x150/ff4500/ffffff?text=JS",
-        color: "#ff4500",
-    },
-];
-
-export { MOCK_USERS };
-
-const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+// Removed MOCK_USERS as it's no longer needed
 
 export const authService = {
     async login(email, password) {
-        await delay(1000);
+        try {
+            const response = await fetch(`${API_BASE_URL}/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password }),
+            });
+            const result = await response.json();
 
-        const user = MOCK_USERS.find(
-            (u) => u.email === email && u.password === password
-        );
-
-        if (user) {
-            const token = btoa(JSON.stringify({ id: user.id, email: user.email }));
-            const userData = {
-                id: user.id,
-                email: user.email,
-                name: user.name,
-                role: user.role,
-                avatar: user.avatar,
-                color: user.color,
-            };
-
-            Cookies.set("auth-token", token, { expires: 7 });
-            Cookies.set("user-data", JSON.stringify(userData), { expires: 7 });
-
-            return { success: true, user: userData, token };
+            if (result.success) {
+                // Mock token for frontend, real apps would get a token from the backend
+                const token = btoa(JSON.stringify({ id: result.user.id, email: result.user.email }));
+                Cookies.set("auth-token", token, { expires: 7 });
+                Cookies.set("user-data", JSON.stringify(result.user), { expires: 7 });
+            }
+            return result;
+        } catch (error) {
+            console.error('Login error:', error);
+            return { success: false, message: 'An error occurred during login.' };
         }
-
-        return { success: false, message: "Invalid email or password" };
     },
 
-    async register(email, password, name, role = "developer") {
-        await delay(1000);
+    async register(email, password, name, role) {
+        try {
+            const response = await fetch(`${API_BASE_URL}/register`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, email, password, role }),
+            });
+            const result = await response.json();
 
-        const existingUser = MOCK_USERS.find((u) => u.email === email);
-        if (existingUser) {
-            return { success: false, message: "User already exists" };
+            if (result.success) {
+                const token = btoa(JSON.stringify({ id: result.user.id, email: result.user.email }));
+                Cookies.set("auth-token", token, { expires: 7 });
+                Cookies.set("user-data", JSON.stringify(result.user), { expires: 7 });
+            }
+            return result;
+        } catch (error) {
+            console.error('Registration error:', error);
+            return { success: false, message: 'An error occurred during registration.' };
         }
-
-        const randomColor = getRandomColor();
-        const initials = getInitials(name);
-
-        const newUser = {
-            id: Date.now().toString(),
-            email,
-            password,
-            name,
-            role: role,
-            avatar: `https://placehold.co/150x150/${randomColor}/ffffff?text=${initials}`,
-            color: `#${randomColor}`,
-        };
-
-        MOCK_USERS.push(newUser);
-
-        const token = btoa(
-            JSON.stringify({ id: newUser.id, email: newUser.email })
-        );
-        const userData = {
-            id: newUser.id,
-            email: newUser.email,
-            name: newUser.name,
-            role: newUser.role,
-            avatar: newUser.avatar,
-            color: newUser.color,
-        };
-
-        Cookies.set("auth-token", token, { expires: 7 });
-        Cookies.set("user-data", JSON.stringify(userData), { expires: 7 });
-
-        return { success: true, user: userData, token };
     },
 
     async updateUser(userId, updatedUser) {
-        await delay(500);
-        const userIndex = MOCK_USERS.findIndex(u => u.id === userId);
-        if (userIndex !== -1) {
-            MOCK_USERS[userIndex] = {
-                ...MOCK_USERS[userIndex],
-                ...updatedUser,
-                password: updatedUser.password || MOCK_USERS[userIndex].password,
-            };
+        try {
+            const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updatedUser),
+            });
+            const result = await response.json();
 
-            const userData = {
-                id: MOCK_USERS[userIndex].id,
-                email: MOCK_USERS[userIndex].email,
-                name: MOCK_USERS[userIndex].name,
-                role: MOCK_USERS[userIndex].role,
-                avatar: MOCK_USERS[userIndex].avatar,
-                color: MOCK_USERS[userIndex].color,
-            };
-            Cookies.set("user-data", JSON.stringify(userData), { expires: 7 });
-            return { success: true, user: userData };
+            if (result.success) {
+                // Update the user data in cookies with the latest from the backend
+                Cookies.set("user-data", JSON.stringify(result.user), { expires: 7 });
+            }
+            return result;
+        } catch (error) {
+            console.error('Update user error:', error);
+            return { success: false, message: 'An error occurred during profile update.' };
         }
-        return { success: false, message: "User not found" };
+    },
+
+    async getAllUsers() {
+        try {
+            const response = await fetch(`${API_BASE_URL}/users`);
+            if (!response.ok) {
+                throw new Error('Failed to fetch users');
+            }
+            return await response.json();
+        } catch (error) {
+            console.error('Get all users error:', error);
+            return [];
+        }
     },
 
     logout() {
@@ -165,14 +87,8 @@ export const authService = {
     },
 
     getCurrentUser() {
-        const token = Cookies.get("auth-token");
         const userData = Cookies.get("user-data");
-
-        if (token && userData) {
-            return JSON.parse(userData);
-        }
-
-        return null;
+        return userData ? JSON.parse(userData) : null;
     },
 
     isAuthenticated() {

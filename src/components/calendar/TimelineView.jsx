@@ -1,7 +1,7 @@
 import React from 'react';
 import { TaskStatus } from '../../types/types';
 
-export const TimelineView = ({ tasks, onOpenDetails }) => {
+export const TimelineView = ({ tasks, onOpenDetails, users }) => { // Added 'users' prop
   // Filter tasks that have a startDate and dueDate
   const timelineTasks = tasks.filter(task => task.startDate && task.dueDate);
 
@@ -59,7 +59,7 @@ export const TimelineView = ({ tasks, onOpenDetails }) => {
                 <div 
                   className={`absolute top-0 h-full rounded-full transition-all duration-300 ease-in-out flex items-center p-2 ${getStatusColor(task.status)}`}
                   style={{ left: `${startOffsetPercent}%`, width: `${durationPercent}%` }}
-                  onClick={() => onOpenDetails(task)}
+                  onClick={() => onOpenDetails(task, users)} // Pass users along with task
                   title={task.title}
                 >
                   <span className="text-xs font-semibold text-white truncate">{task.title}</span>
