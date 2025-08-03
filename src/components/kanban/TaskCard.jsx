@@ -26,6 +26,15 @@ export function TaskCard({ task, onOpenDetails }) {
 
   const assignedUsers = MOCK_USERS.filter(user => task.assignedTo.includes(user.id));
 
+  // Helper function for overdue styling
+  const isOverdue = (date) => {
+    if (!date) return false;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const dueDate = new Date(date);
+    return dueDate < today && task.status !== TaskStatus.DONE;
+  };
+
   return (
     <div
       ref={setNodeRef}
@@ -40,6 +49,34 @@ export function TaskCard({ task, onOpenDetails }) {
       >
         <h3 className="font-medium text-neutral-100">{task.title}</h3>
         <p className="mt-2 text-sm text-neutral-400">{task.description}</p>
+        
+        {/* Display Dates */}
+        <div className="mt-2 text-xs flex flex-wrap items-center gap-2">
+          {task.dueDate && (
+            <div className={`flex items-center space-x-1 ${isOverdue(task.dueDate) ? 'text-red-400' : 'text-neutral-400'}`}>
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
+              </svg>
+              <span>{task.dueDate}</span>
+            </div>
+          )}
+          {task.startDate && (
+            <div className="flex items-center space-x-1 text-neutral-400">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M4 4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1.586a1 1 0 01-.707-.293l-1.414-1.414A1 1 0 0010.586 2h-1.172a1 1 0 00-.707.293L7.293 3.586A1 1 0 016.586 4H5a2 2 0 00-2 2zM3 7v9a1 1 0 001 1h12a1 1 0 001-1V7H3z" />
+              </svg>
+              <span>{task.startDate}</span>
+            </div>
+          )}
+          {task.endDate && (
+            <div className="flex items-center space-x-1 text-neutral-400">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M4 4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1.586a1 1 0 01-.707-.293l-1.414-1.414A1 1 0 0010.586 2h-1.172a1 1 0 00-.707.293L7.293 3.586A1 1 0 016.586 4H5a2 2 0 00-2 2zM3 7v9a1 1 0 001 1h12a1 1 0 001-1V7H3z" />
+              </svg>
+              <span>{task.endDate}</span>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Footer with Progress Bar and Details Button */}

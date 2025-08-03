@@ -2,8 +2,9 @@ import React from 'react';
 import { KanbanBoard } from "../components/kanban/KanbanBoard";
 import { Navbar } from "../components/layout/Navbar";
 import { ProjectAnalytics } from '../components/kanban/ProjectAnalytics';
+import { INITIAL_TASKS } from '../data/initialData';
+import { TaskStatus } from '../types/types';
 
-// DashboardPage now receives all state-related props
 export const DashboardPage = ({ tasks, onAddTask, onSaveTaskDetails, onDeleteTask, onDragEnd }) => {
   return (
     <div className="min-h-screen bg-gray-900 flex flex-col">

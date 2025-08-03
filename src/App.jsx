@@ -11,6 +11,8 @@ import { LoginPage } from "./pages/LoginPage";
 import { RegisterPage } from "./pages/RegisterPage";
 import { DashboardPage } from "./pages/DashboardPage";
 import { ProfilePage } from "./pages/ProfilePage";
+import { CalendarPage } from "./pages/CalendarPage";
+import { TimelineView } from "./components/calendar/TimelineView"; // Import TimelineView
 
 import { INITIAL_TASKS } from './data/initialData';
 import { TaskStatus } from './types/types';
@@ -100,6 +102,31 @@ export default function App() {
                   tasks={tasks}
                   onSaveTaskDetails={handleSaveTaskDetails}
                   onDeleteTask={handleDeleteTask}
+                />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/calendar"
+            element={
+              <ProtectedRoute>
+                <CalendarPage
+                  tasks={tasks}
+                  onSaveTaskDetails={handleSaveTaskDetails}
+                  onDeleteTask={handleDeleteTask}
+                />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/timeline" // New route for the timeline view
+            element={
+              <ProtectedRoute>
+                <CalendarPage // We'll use CalendarPage as a wrapper for now
+                  tasks={tasks}
+                  onSaveTaskDetails={handleSaveTaskDetails}
+                  onDeleteTask={handleDeleteTask}
+                  showTimeline={true} // New prop to show timeline instead of calendar
                 />
               </ProtectedRoute>
             }

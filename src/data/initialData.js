@@ -12,7 +12,9 @@ export const INITIAL_TASKS = [{
         description: "Gather requirements and create initial documentation",
         status: TaskStatus.TODO,
         progress: 0,
-        assignedTo: ["1"], // Now an array with one user
+        assignedTo: ["1"],
+        dueDate: '2025-08-15',
+        startDate: '2025-08-11',
     },
     {
         id: "2",
@@ -20,7 +22,9 @@ export const INITIAL_TASKS = [{
         description: "Create component library and design tokens",
         status: TaskStatus.TODO,
         progress: 0,
-        assignedTo: ["3"], // Now an array
+        assignedTo: ["3"],
+        dueDate: '2025-08-20',
+        startDate: '2025-08-16',
     },
     {
         id: "3",
@@ -28,7 +32,9 @@ export const INITIAL_TASKS = [{
         description: "Implement REST API endpoints",
         status: TaskStatus.IN_PROGRESS,
         progress: 50,
-        assignedTo: ["2", "4"], // Assigned to Regular User and John Smith
+        assignedTo: ["2", "4"],
+        dueDate: '2025-08-10',
+        startDate: '2025-08-01',
     },
     {
         id: "4",
@@ -36,7 +42,9 @@ export const INITIAL_TASKS = [{
         description: "Write unit tests for core functionality",
         status: TaskStatus.DONE,
         progress: 100,
-        assignedTo: ["1", "3"], // Assigned to Admin and Jane Doe
+        assignedTo: ["1", "3"],
+        dueDate: '2025-08-05',
+        startDate: '2025-08-03',
     },
     {
         id: "5",
@@ -44,6 +52,8 @@ export const INITIAL_TASKS = [{
         description: "Push the latest version of the app live",
         status: TaskStatus.TODO,
         progress: 0,
-        assignedTo: [], // Unassigned, now an empty array
+        assignedTo: [],
+        dueDate: '2025-08-25',
+        startDate: '2025-08-22',
     },
 ];

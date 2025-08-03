@@ -8,7 +8,9 @@ export const TaskDetails = ({ task, onSave, onDelete, onCancel }) => {
   const [editedTitle, setEditedTitle] = useState('');
   const [editedDescription, setEditedDescription] = useState('');
   const [editedProgress, setEditedProgress] = useState(0);
-  const [editedAssignedTo, setEditedAssignedTo] = useState([]); // Now an array
+  const [editedAssignedTo, setEditedAssignedTo] = useState([]);
+  const [editedDueDate, setEditedDueDate] = useState('');
+  const [editedStartDate, setEditedStartDate] = useState('');
   const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
@@ -16,7 +18,9 @@ export const TaskDetails = ({ task, onSave, onDelete, onCancel }) => {
       setEditedTitle(task.title);
       setEditedDescription(task.description);
       setEditedProgress(task.progress || 0);
-      setEditedAssignedTo(task.assignedTo); // Set initial array
+      setEditedAssignedTo(task.assignedTo);
+      setEditedDueDate(task.dueDate || '');
+      setEditedStartDate(task.startDate || '');
     }
   }, [task]);
 
@@ -30,7 +34,9 @@ export const TaskDetails = ({ task, onSave, onDelete, onCancel }) => {
       title: editedTitle,
       description: editedDescription,
       progress: parseInt(editedProgress, 10),
-      assignedTo: editedAssignedTo, // Save the array of assignees
+      assignedTo: editedAssignedTo,
+      dueDate: editedDueDate || null,
+      startDate: editedStartDate || null,
     });
     setIsEditing(false);
   };
@@ -45,7 +51,9 @@ export const TaskDetails = ({ task, onSave, onDelete, onCancel }) => {
     setEditedTitle(task.title);
     setEditedDescription(task.description);
     setEditedProgress(task.progress || 0);
-    setEditedAssignedTo(task.assignedTo); // Reset to original array
+    setEditedAssignedTo(task.assignedTo);
+    setEditedDueDate(task.dueDate || '');
+    setEditedStartDate(task.startDate || '');
     setIsEditing(false);
     onCancel();
   };
@@ -58,17 +66,16 @@ export const TaskDetails = ({ task, onSave, onDelete, onCancel }) => {
   };
   
   const getAssignedUserNames = () => {
-    if (editedAssignedTo.length === 0) {
+    if (!task.assignedTo || task.assignedTo.length === 0) {
       return 'Unassigned';
     }
-    const names = MOCK_USERS.filter(user => editedAssignedTo.includes(user.id)).map(user => user.name);
+    const names = MOCK_USERS.filter(user => task.assignedTo.includes(user.id)).map(user => user.name);
     return names.join(', ');
   };
 
   return (
     <div className="text-neutral-200">
       {isEditing ? (
-        // Editing Mode
         <div className="space-y-4">
           <div>
             <label htmlFor="title" className="block text-sm font-medium text-neutral-300 mb-1">
@@ -114,7 +121,32 @@ export const TaskDetails = ({ task, onSave, onDelete, onCancel }) => {
             </div>
           )}
 
-          {/* New Multi-User Assignment Picker */}
+          <div>
+            <label htmlFor="dueDate" className="block text-sm font-medium text-neutral-300 mb-1">
+              Due Date
+            </label>
+            <input
+              id="dueDate"
+              type="date"
+              value={editedDueDate}
+              onChange={(e) => setEditedDueDate(e.target.value)}
+              className="w-full p-2 rounded-md bg-neutral-700 border border-neutral-600 text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="startDate" className="block text-sm font-medium text-neutral-300 mb-1">
+              Start Date
+            </label>
+            <input
+              id="startDate"
+              type="date"
+              value={editedStartDate}
+              onChange={(e) => setEditedStartDate(e.target.value)}
+              className="w-full p-2 rounded-md bg-neutral-700 border border-neutral-600 text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
           <div>
             <label className="block text-sm font-medium text-neutral-300 mb-2">
               Assigned To
@@ -141,17 +173,15 @@ export const TaskDetails = ({ task, onSave, onDelete, onCancel }) => {
           </div>
         </div>
       ) : (
-        // Viewing Mode
-        <div>
+        <div className="space-y-4">
           <h3 className="text-2xl font-bold mb-3">{task.title}</h3>
           <p className="text-neutral-300 mb-4 whitespace-pre-wrap">{task.description}</p>
-          <div className="space-y-2 mb-4">
+          <div className="space-y-2">
             <p className="text-lg font-semibold">
               Status:{' '}
               <span className="capitalize font-normal">{task.status.toLowerCase().replace(/_/g, ' ')}</span>
             </p>
 
-            {/* Conditional Progress Meter */}
             {task.status === TaskStatus.IN_PROGRESS ? (
               <div className="flex flex-col items-center">
                 <CircularProgressMeter progress={task.progress} />
@@ -174,11 +204,23 @@ export const TaskDetails = ({ task, onSave, onDelete, onCancel }) => {
               </div>
             )}
             
-            {/* Display Assigned Users in Viewing Mode */}
             <p className="text-lg font-semibold">
               Assigned To:
               <span className="capitalize font-normal ml-2">
                 {getAssignedUserNames()}
+              </span>
+            </p>
+
+            <p className="text-lg font-semibold">
+              Due Date:
+              <span className="capitalize font-normal ml-2">
+                {task.dueDate ? task.dueDate : 'No due date'}
+              </span>
+            </p>
+            <p className="text-lg font-semibold">
+              Start Date:
+              <span className="capitalize font-normal ml-2">
+                {task.startDate ? task.startDate : 'No start date'}
               </span>
             </p>
           </div>
