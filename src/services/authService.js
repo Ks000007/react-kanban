@@ -2,7 +2,6 @@ import Cookies from "js-cookie";
 
 const API_BASE_URL = 'http://localhost:3001/api';
 
-// Removed MOCK_USERS as it's no longer needed
 
 export const authService = {
     async login(email, password) {
@@ -15,7 +14,6 @@ export const authService = {
             const result = await response.json();
 
             if (result.success) {
-                // Mock token for frontend, real apps would get a token from the backend
                 const token = btoa(JSON.stringify({ id: result.user.id, email: result.user.email }));
                 Cookies.set("auth-token", token, { expires: 7 });
                 Cookies.set("user-data", JSON.stringify(result.user), { expires: 7 });
